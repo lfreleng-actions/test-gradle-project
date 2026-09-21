@@ -1,64 +1,27 @@
 # SPDX-License-Identifier: Apache-2.0
-# SPDX-FileCopyrightText: 2025 The Linux Foundation
+# SPDX-FileCopyrightText: 2026 The Linux Foundation
 
-# Temporary and binary files
-*~
-*.py[cod]
-*.so
-*.cfg
-!.isort.cfg
-!setup.cfg
-*.orig
-*.log
-*.pot
-__pycache__/*
-.cache/*
-.*.swp
-*/.ipynb_checkpoints/*
-.DS_Store
+# Gradle build output
+build/
+.gradle/
 
-# Project files
-.ropeproject
+# Note the absence of a blanket '*.jar' rule, which the Maven fixture
+# carries. Gradle's wrapper JAR is version-controlled by design: the
+# build lane runs ./gradlew and validates the JAR's checksum, so ignoring
+# it would break the build rather than tidy the tree. Compiled artefacts
+# land in build/ and are already covered above.
+
+# Sonar scanner working directory
+.scannerwork/
+.sonar/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
 .project
-.pydevproject
-.settings
-.idea
-.vscode
-tags
 
-# Package files
-*.egg
-*.eggs/
-.installed.cfg
-*.egg-info
-
-# Unittest and coverage
-htmlcov/*
-.coverage
-.coverage.*
-.tox
-junit*.xml
-coverage.xml
-.pytest_cache/
-
-# Build and docs folder/files
-build/*
-dist/*
-sdist/*
-docs/api/*
-docs/_rst/*
-docs/_build/*
-cover/*
-MANIFEST
-
-# Per-project virtualenvs
-.venv*/
-.conda*/
-.python-version
-
-# Node
-node_modules/*
-
-# aislop writes a local score history on every scan (see aislop trend).
-# .aislop/config.yml is the only file there that belongs in git.
-.aislop/history.jsonl
+# OS
+.DS_Store

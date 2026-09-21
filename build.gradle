@@ -1,0 +1,104 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: 2026 The Linux Foundation
+
+// Root build script: shared configuration for every module.
+//
+// Gradle has no separate parent project, so this file plays the role the
+// parent POM plays in the Maven fixture. The root itself produces no
+// artefact; it only configures its children.
+
+// Dependency versions, held centrally so the module scripts carry
+// coordinates rather than numbers. This is the Gradle counterpart of the
+// <properties> block in the Maven fixture's parent POM.
+//
+// Declared as extra properties here rather than in gradle.properties,
+// which would read more naturally but would leave these pins unmanaged.
+// Dependabot's Gradle PropertyValueFinder resolves ${...} references
+// against build.gradle and build.gradle.kts alone, so a version parked in
+// gradle.properties is invisible to it and would quietly age. Subprojects
+// inherit extra properties from the root, so core resolves jacksonVersion
+// from here.
+ext {
+    junitVersion = '6.1.3'
+    jacksonVersion = '2.22.2'
+    jacocoVersion = '0.8.15'
+}
+
+// Coordinates apply to the root as well as the modules. Setting them
+// inside 'subprojects' would leave the root without a group or version,
+// and an aggregate SBOM generated against this build then describes its
+// own root component as 'unspecified'. The Maven fixture's aggregator POM
+// carries a groupId and version for the same reason.
+allprojects {
+    group = 'org.lfreleng.test'
+    version = '1.0.0-SNAPSHOT'
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'jacoco'
+
+    java {
+        // Declared as a toolchain rather than source/targetCompatibility.
+        // This is the form modern Gradle projects use, and the one build
+        // metadata detection reads first, so the fixture exercises the
+        // primary detection path rather than a fallback.
+        //
+        // Gradle resolves this against JDKs already installed on the
+        // machine. No toolchain resolver plugin is configured, so an
+        // unmatched version fails the build with a clear message instead
+        // of reaching out to a provisioning service, which keeps the
+        // build's egress footprint to the repositories named below.
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
+    // Declared per project rather than centrally in settings.gradle.
+    // dependencyResolutionManagement offers a stricter RepositoriesMode
+    // that rejects project-level repositories, and this fixture exists to
+    // be driven by external tooling -- notably SBOM generation injected
+    // through an init script, which may add repositories of its own.
+    // Project-level declaration cannot conflict with that.
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        testImplementation platform("org.junit:junit-bom:${junitVersion}")
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+
+    jacoco {
+        toolVersion = jacocoVersion
+    }
+
+    tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+
+        // Tests named Failing*Test stay out of a normal build. Run with
+        // -PfailingTests to include them and produce a build that fails
+        // during the test task, which lets consumers exercise
+        // test-failure handling such as soft-fail inputs and report
+        // rendering against a genuinely failing build.
+        //
+        // This mirrors the surefire.excludes property and failing-tests
+        // profile in the Maven fixture.
+        if (!project.hasProperty('failingTests')) {
+            exclude '**/Failing*Test.class'
+        }
+
+        finalizedBy tasks.named('jacocoTestReport')
+    }
+
+    tasks.named('jacocoTestReport') {
+        dependsOn tasks.named('test')
+        reports {
+            // SonarQube consumes the XML report; the HTML report is of no
+            // use to a headless consumer and only costs build time.
+            xml.required = true
+            html.required = false
+        }
+    }
+}

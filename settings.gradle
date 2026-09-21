@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: 2026 The Linux Foundation
+
+// Settings script, deliberately in the Groovy DSL.
+//
+// Gradle picks the build's dialect from the file it finds at the root:
+// settings.gradle is Groovy, settings.gradle.kts is Kotlin. Keeping the
+// root Groovy also keeps project-type detection honest. Metadata tooling
+// scans only the root directory, and build.gradle.kts is classified as
+// Kotlin at a higher precedence than build.gradle is classified as Java,
+// so a Kotlin root would have this fixture detected as a Kotlin project.
+// The Kotlin dialect is exercised in the app module instead, where it
+// cannot affect detection.
+
+rootProject.name = 'test-gradle-project'
+
+include 'core'
+include 'app'

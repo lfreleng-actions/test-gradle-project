@@ -16,3 +16,28 @@ updates:
     cooldown:
       default-days: 7
     open-pull-requests-limit: 15
+
+  # The fixture pins JUnit, JaCoCo and Jackson as extra properties in the
+  # root build.gradle so builds stay reproducible; without updates those
+  # pins quietly age and the project stops representing a current Gradle
+  # build.
+  #
+  # This one entry covers both kinds of update. Dependabot's gradle
+  # ecosystem resolves version properties from build.gradle and
+  # build.gradle.kts, and it also updates the wrapper: dependabot-core
+  # carries a wrapper updater alongside a distributions finder that reads
+  # gradle/wrapper/gradle-wrapper.properties. There is no separate
+  # gradle-wrapper ecosystem, and the schema rejects one.
+  #
+  # Note that versions declared in gradle.properties would NOT be covered.
+  # The property resolver scans build scripts alone, which is why this
+  # fixture keeps its pins in the root build script.
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "Chore(gradle)"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 10
