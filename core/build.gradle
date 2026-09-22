@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: 2026 The Linux Foundation
+
+// Core library module, in the Groovy DSL.
+
+description = 'Core library module of the sample Gradle project'
+
+dependencies {
+    // The platform below supplies the version for the coordinate after it,
+    // which is declared deliberately versionless. jackson-databind also
+    // pulls jackson-core and jackson-annotations transitively, so one
+    // declared coordinate resolves to three components.
+    //
+    // Both properties matter to SBOM fixtures. A generator that reads the
+    // build script as text sees one component with no version, whereas
+    // one driven by Gradle's own resolver sees all three with correct
+    // versions.
+    //
+    // 'implementation' rather than 'testImplementation' is load-bearing:
+    // test dependencies are absent from the shipped artefact, so a
+    // resolved-graph generator excludes them by default and a fixture
+    // carrying nothing else yields a BOM with no third-party components
+    // at all.
+    implementation platform("com.fasterxml.jackson:jackson-bom:${jacksonVersion}")
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+}
