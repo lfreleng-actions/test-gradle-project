@@ -16,3 +16,11 @@ rootProject.name = 'test-gradle-project'
 
 include 'core'
 include 'app'
+
+// A grandchild of the root, not a direct child. Tooling that walks a
+// build commonly stops at the root's immediate subprojects, so a
+// two-level tree is what distinguishes "handles multi-project" from
+// "handles one level of multi-project". The module carries a dependency
+// nothing else in the build uses, which makes its presence in an
+// aggregated result provable rather than inferred.
+include 'app:nested'

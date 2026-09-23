@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: 2026 The Linux Foundation
+
+// Nested module: a grandchild of the root, under app.
+//
+// Groovy DSL beneath a Kotlin DSL parent, which is legal and worth
+// exercising: the dialect belongs to each build script rather than to
+// the tree, so a nested module need not match its parent.
+
+description = 'Nested module, a grandchild of the root project'
+
+dependencies {
+    // Deliberately unique to this module. Nothing else in the build
+    // depends on commons-lang3, so its presence in an aggregated SBOM
+    // proves the tool reached a grandchild rather than stopping at the
+    // root's direct subprojects. A shared dependency could not
+    // distinguish the two.
+    //
+    // 'implementation' for the same reason core uses it: a test-only
+    // dependency is absent from the shipped artefact, so a
+    // resolved-graph generator excludes it by default.
+    implementation "org.apache.commons:commons-lang3:${commonsLangVersion}"
+}
