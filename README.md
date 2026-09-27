@@ -24,10 +24,19 @@ settings.gradle    reactor definition, Groovy DSL
 build.gradle       shared configuration and dependency versions
 core/              library module, Groovy DSL
 app/               depends on core, Kotlin DSL
+app/nested/        grandchild of the root, Groovy DSL
 ```
 
 `app` depends on `core`, so the modules cannot build independently and
 the build has a real task order to resolve.
+
+`app/nested` sits a level deeper on purpose. Tooling that walks a Gradle
+build commonly stops at the root's immediate subprojects, so a two-level
+tree is what separates "handles multi-project" from "handles one level of
+multi-project". It carries `commons-lang3`, which nothing else in the
+build uses — so whether that coordinate appears in a tool's output
+distinguishes one that reaches grandchildren from one that stops short. A
+shared dependency could not make that distinction.
 
 Gradle has no separate parent project, so the root script plays the role
 the parent POM plays in the Maven fixture. That is a deliberate
@@ -42,6 +51,7 @@ what Gradle projects actually do.
 | Gradle             | 9.7.1, through the committed wrapper             |
 | Tests              | JUnit 6 (`junit-bom` 6.1.3)                      |
 | Runtime dependency | Jackson (`jackson-bom` 2.22.2, `implementation`) |
+| Nested dependency  | Apache Commons Lang 3.20.0                       |
 | Coverage           | JaCoCo 0.8.15, XML report per module             |
 
 The root script declares the Java level as a **toolchain** rather than
@@ -85,7 +95,10 @@ a scanner cannot match. Either way there is nothing worth measuring.
 
 ## Why both DSL dialects
 
-The root and `core` use the Groovy DSL; `app` uses the Kotlin DSL.
+The root and `core` use the Groovy DSL; `app` uses the Kotlin DSL, and
+`app/nested` returns to Groovy beneath its Kotlin parent — legal,
+because the dialect belongs to each build script rather than to the
+tree.
 
 Mixing dialects in one build is legal, and that is the point. Plugin
 application and configuration differ between the two, so tooling that
