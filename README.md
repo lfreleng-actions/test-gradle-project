@@ -25,6 +25,7 @@ build.gradle       shared configuration and dependency versions
 core/              library module, Groovy DSL
 app/               depends on core, Kotlin DSL
 app/nested/        grandchild of the root, Groovy DSL
+submodule/         git submodule pinned to a commit holding a README
 ```
 
 `app` depends on `core`, so the modules cannot build independently and
@@ -141,6 +142,47 @@ dependency versions, so both stay current without manual intervention.
 
 The second form lets consumers exercise test-failure handling — soft-fail
 inputs, report rendering — against a build that genuinely fails.
+
+## Submodule
+
+`submodule/` is a git submodule pinning the first commit of
+`lfreleng-actions/test-maven-project`, which holds a two-line `README.md`
+and nothing else. That gives checkout tooling a real submodule to fetch,
+without nesting a second build in this one. The pinned commit has no
+`.gitmodules`, so a recursive checkout stops one level down. This
+repository's own first commit would not serve: that commit copies the
+actions template, whose action and workflow files tooling scanning this
+fixture could mistake for its own.
+
+`core`'s `SubmoduleTest` reads that README and checks its content, so the
+result depends on how a checkout handled the submodule:
+
+| Checkout                         | `SubmoduleTest` |
+| -------------------------------- | --------------- |
+| With submodules                  | Passes          |
+| Without submodules               | Skipped         |
+| Submodule with other content     | Fails           |
+
+The test compares the README's content, not the submodule's commit: git
+already checks out the commit `.gitmodules` pins, so what the test adds
+is proof that a checkout fetched the submodule at all. A commit carrying
+an identical README would pass it.
+
+A plain `git clone`, or `actions/checkout` with its default
+`submodules: false`, leaves the directory empty, so the test skips and
+the build still succeeds. A workflow that tests submodule checkout
+should assert that `SubmoduleTest` **passed**: a skip there means the
+checkout left the submodule out.
+
+`core/build.gradle` declares the directory as an input of the `test`
+task. Gradle cannot otherwise see a file a test reads at run time, so
+it would reuse a result recorded with the submodule absent once the
+submodule is present, and the reverse, from its up-to-date checks or the
+build cache.
+
+The pinned commit is an ancestor of `test-maven-project`'s `main`, and
+that repository permits merge commits alone, so the commit stays
+reachable and GitHub serves it by SHA to a shallow submodule fetch.
 
 ## Usage
 
