@@ -127,6 +127,11 @@ build lane runs `./gradlew` and validates the wrapper JAR's checksum, so
 omitting them breaks the build. `.gitignore` carries no blanket `*.jar`
 rule for that reason; build output lands in `build/` instead.
 
+Both scripts keep the line endings Gradle generates: LF for `gradlew`,
+CRLF for `gradlew.bat`. `.gitattributes` disables conversion for them,
+and the `mixed-line-ending` hook skips `gradlew.bat`, so a wrapper
+upgrade commits Gradle's output unchanged.
+
 The single `gradle` Dependabot entry covers the wrapper as well as the
 dependency versions, so both stay current without manual intervention.
 
