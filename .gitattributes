@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2026 The Linux Foundation
+
+# Gradle generates gradlew with LF line endings and gradlew.bat with CRLF.
+# Store both exactly as generated, so the wrapper task and Dependabot's
+# wrapper bumps reproduce the tracked bytes instead of rewriting every
+# line. Disabling conversion also keeps each script's endings intact in
+# any checkout, whatever core.autocrlf is set to: sh rejects CR, and
+# cmd.exe can misparse labels in a batch file with bare LF.
+/gradlew      -text
+/gradlew.bat  -text
